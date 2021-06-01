@@ -291,7 +291,7 @@ df['class_summed']=df['Pclass'].value_counts()
 df['eta_count']= df["Age"].value_counts()
 
 
-# In[149]:
+# In[11]:
 
 
 l_param = []
@@ -340,7 +340,7 @@ def eta():
     
 
 
-# In[150]:
+# In[12]:
 
 
 #DA QUI INIZIA IL NOSTRO MAIN, VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
@@ -370,7 +370,7 @@ for i in range(1,len(sys.argv)):
 
 
 
-# In[151]:
+# In[13]:
 
 
 #SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA
