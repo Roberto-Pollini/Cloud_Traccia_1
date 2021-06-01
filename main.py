@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-<<<<<<< HEAD
 # In[1]:
-=======
-# In[126]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
 
 
 import pandas as pd
@@ -21,19 +17,12 @@ import sys
 import time
 import csv
 import os
-<<<<<<< HEAD
-from datetime import timedelta,date
-
-
-# In[2]:
-=======
 import logging
 
 from datetime import timedelta,date
 
 
-# In[127]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
+# In[2]:
 
 
 #CONSIDERIAMO PATH ASSOLUTO (EVENTUALE SVILUPPO CON CRON)
@@ -43,11 +32,7 @@ path_materiale = str(path_abs+"/titanic/")
 file_path = str(path_abs+"/titanic/")
 
 
-<<<<<<< HEAD
 # In[3]:
-=======
-# In[128]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
 
 
 path_materiale
@@ -55,11 +40,7 @@ path_materiale
 #path_abs
 
 
-<<<<<<< HEAD
 # In[4]:
-=======
-# In[129]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
 
 
 #NASCONDERE EVENTUALI WARNING DI PANDAS PER COPIA DEL DF
@@ -78,11 +59,7 @@ def check_dir(log):
         try: 
             os.mkdir(path_materiale) 
         except OSError as error: 
-<<<<<<< HEAD
-            log.append({"desc":"Errore nella creazione della directory materiale","code":error})
-=======
             log.append({"desc":"Errore nella creazione della directory titanic","code":error})
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
     else:
         log.append({"desc":"Directory materiale esiste già","code":"0"})
 
@@ -262,11 +239,7 @@ def check_dir(log):
 # rel_tg = note()
 # 
 
-<<<<<<< HEAD
 # In[5]:
-=======
-# In[130]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
 
 
 #######
@@ -281,20 +254,13 @@ df = pd.read_csv(file, encoding = "utf-8 ")
 df.shape
 
 
-<<<<<<< HEAD
-# In[8]:
-=======
-# In[131]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
+# In[6]:
 
 
 df.head(20)
 
 
-<<<<<<< HEAD
-# In[10]:
-=======
-# In[132]:
+# In[7]:
 
 
 #Possiamo loggare tutti gli errori da debug in su (info, warning, error e critical)
@@ -302,8 +268,7 @@ logging.basicConfig(filename=path_materiale+'main.log', filemode='a+', format='%
 logger = logging.getLogger()
 
 
-# In[133]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
+# In[8]:
 
 
 #df['count_Survived'] = df['Survived'].count
@@ -314,31 +279,19 @@ logger = logging.getLogger()
 df['count_survived']=df['Survived'].value_counts()
 
 
-<<<<<<< HEAD
-# In[12]:
-=======
-# In[134]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
+# In[9]:
 
 
 df['class_summed']=df['Pclass'].value_counts()
 
 
-<<<<<<< HEAD
-# In[14]:
-=======
-# In[135]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
+# In[10]:
 
 
 df['eta_count']= df["Age"].value_counts()
 
 
-<<<<<<< HEAD
-# In[15]:
-=======
-# In[136]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
+# In[149]:
 
 
 l_param = []
@@ -361,11 +314,7 @@ def totale_sopravvissuti():
     plt.barh(df["Survived"],df['count_survived'])
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-<<<<<<< HEAD
-    rel_tg.add_msg(filename,"img",titolo,filename)
-=======
     #rel_tg.add_msg(filename,"img",titolo,filename)
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
 
 def classe_viaggio(): 
     titolo = "Classe di appartenenza"
@@ -377,11 +326,7 @@ def classe_viaggio():
     ax.legend(["prima", "seconda","terza"])
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-<<<<<<< HEAD
-    rel_tg.add_msg(filename,"img",titolo,filename)
-=======
     #rel_tg.add_msg(filename,"img",titolo,filename)
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
     
 def eta():
     titolo = "età dei passeggeri"
@@ -391,19 +336,11 @@ def eta():
     ax.legend(["età", "frequenza"])
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-<<<<<<< HEAD
-    rel_tg.add_msg(filename,"img",titolo,filename)
-    
-
-
-# In[17]:
-=======
     #rel_tg.add_msg(filename,"img",titolo,filename)
     
 
 
-# In[137]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
+# In[150]:
 
 
 #DA QUI INIZIA IL NOSTRO MAIN, VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
@@ -421,9 +358,6 @@ for i in range(1,len(sys.argv)):
         eta()
 
 
-<<<<<<< HEAD
-# In[22]:
-=======
 # In[ ]:
 
 
@@ -436,21 +370,14 @@ for i in range(1,len(sys.argv)):
 
 
 
-# In[138]:
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
+# In[151]:
 
 
 #SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA
 if os.getenv("PROD") == None:
     
-<<<<<<< HEAD
-    command = "jupyter nbconvert --to script main.ipynb"
-    os.system(command)
- 
-=======
     command = "jupyter nbconvert --to 'script' main.ipynb"
     os.system(command)
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
     #stoppo ed elimino eventuali contenitori aperti in modo da poter cancellare e ribuildare l'immagine senza crearne di nuove
     import subprocess
     container_ids = subprocess.check_output(['docker', 'ps', '-aq'], encoding='ascii')
@@ -458,17 +385,10 @@ if os.getenv("PROD") == None:
     if container_ids:
         subprocess.check_call(['docker', 'stop'] + container_ids)
         subprocess.check_call(['docker', 'rm'] + container_ids)
-<<<<<<< HEAD
-        
-    command = "docker rmi cloud_titanic"
-    os.system(command)
-    
-=======
 
     command = "docker rmi cloud_titanic"
     os.system(command)
 
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
     command = "docker build -t cloud_titanic ."
     os.system(command)
 
@@ -478,8 +398,6 @@ if os.getenv("PROD") == None:
 
 
 
-<<<<<<< HEAD
-=======
 
 # In[ ]:
 
@@ -504,4 +422,3 @@ if os.getenv("PROD") == None:
 
 
 
->>>>>>> b1dd91c831a368b3d78c3a7ccd8369f0cc49fd98
