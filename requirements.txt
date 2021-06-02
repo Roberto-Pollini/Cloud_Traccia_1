@@ -20,3 +20,4 @@ telepot==12.7
 typing-extensions==3.7.4.3
 urllib3==1.26.4
 yarl==1.6.3
+seaborn==0.11.0

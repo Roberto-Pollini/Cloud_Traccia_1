@@ -18,8 +18,16 @@ import time
 import csv
 import os
 import logging
+import seaborn as sns
+
 
 from datetime import timedelta,date
+
+
+# In[14]:
+
+
+sns.__version__
 
 
 # In[2]:
@@ -297,37 +305,7 @@ df['eta_count']= df["Age"].value_counts()
 
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[17]:
-
-
-df['Survived']=np.where(df['Survived']==1 , 'sopravvissuti', 'deceduti')
-
-
-# In[ ]:
-
-
-
-
-
 # In[11]:
-
-
-
-
-
-# In[12]:
 
 
 l_param = []
@@ -335,6 +313,7 @@ l_param.append({"value":"-?","desc":"Elenca tutti i possibili campi ricercabili"
 l_param.append({"value":"-survived","desc":"Passeggeri sopravvissuti"})
 l_param.append({"value":"-class","desc":"Classe di appertenenza del passeggero"})
 l_param.append({"value":"-age","desc":"età dei passeggeri"})
+l_param.append({"value":"-sex_class","desc":"percentuale sopravvissuti per sesso e classe "})
 
 
 def list_parameters():
@@ -343,6 +322,7 @@ def list_parameters():
         print("{}\n-- {}\n\n".format(i["value"],i["desc"]))
     
 def totale_sopravvissuti(): 
+    df['Survived']=np.where(df['Survived']==1 , 'sopravvissuti', 'deceduti')
     fig, ax = plt.subplots(figsize=(8,4))
     titolo = "Numero di passeggeri sopravvissuti"
     plt.title(titolo, fontsize=15)
@@ -354,7 +334,6 @@ def totale_sopravvissuti():
 
 def classe_viaggio(): 
     titolo = "Classe di appartenenza"
-    plt.title(titolo, fontsize=15)
     df['prima_classe'] = np.where(df['Pclass']== 1 , 1 , 0)
     df['seconda_classe'] = np.where(df['Pclass']== 2 , 1 , 0)
     df['terza_classe'] = np.where(df['Pclass']== 3 , 1 , 0)
@@ -364,23 +343,60 @@ def classe_viaggio():
     fig = plt.figure()
     ax = fig.add_axes([0,0,1,1])
     ax.bar(names,values)
+    plt.title(titolo, fontsize=15)
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+
+def class_sex():
+    titolo = "percentuale di sopravvissuti divisi per sesso e classe"
+
+    sns.set_theme(style="whitegrid")
+    g = sns.catplot(data=df, kind="bar",x='Sex', y ='Survived' ,  hue="Pclass", palette="dark", alpha=.6, height=6)
+    g.despine(left=True)
+    g.set_axis_labels("", "% di sopravvissuti per sesso e classe ")
+    g.legend.set_title("")
+    filename = "{}.png".format(titolo)
+    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+
 
     
 def eta():
     titolo = "età dei passeggeri"
+        
+    df['cat_age']=np.where(df['Age']<10, "0-10", df['Age'])
+    df['cat_age']=np.where(((df['Age']<20) & (df['Age']>=10)), "10-20", df['cat_age'])
+    df['cat_age']=np.where(((df['Age']<30) & (df['Age']>=20)), "20-30", df['cat_age'])
+    df['cat_age']=np.where(((df['Age']<40) & (df['Age']>=30)), "30-40", df['cat_age'])
+    df['cat_age']=np.where(((df['Age']<50) & (df['Age']>=40)), "40-50", df['cat_age'])
+    df['cat_age']=np.where(df['Age']>=50, ">50", df['cat_age'])
+    
+    data = {'0-10': int((df['cat_age']=="0-10").sum()) , '10-20': int((df['cat_age']=="10-20").sum()), 
+        '20-30': int((df['cat_age']=="20-30").sum()), '30-40': int((df['cat_age']=="30-40").sum()), 
+        '40-50': int((df['cat_age']=="40-50").sum()), '>50': int((df['cat_age']==">50").sum())}
+    names = list(data.keys())
+    values = list(data.values())
+
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.bar(names,values)
     plt.title(titolo, fontsize=15)
-    ax = plt.subplot(111)
-    ax.bar(df["Age"], df["eta_count"], width=0.5, color='r', align='center')
-    ax.legend(["età", "frequenza"])
+    
+    #ax.legend(["età", "frequenza"])
+    #ax.bar(df["Age"], df["eta_count"], width=0.5, color='r', align='center')
+    #ax.legend(["età", "frequenza"])
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
     #rel_tg.add_msg(filename,"img",titolo,filename)
     
 
 
-# In[13]:
+# In[ ]:
+
+
+
+
+
+# In[12]:
 
 
 #DA QUI INIZIA IL NOSTRO MAIN, VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
@@ -396,6 +412,8 @@ for i in range(1,len(sys.argv)):
         classe_viaggio()
     if command == "-age":
         eta()
+    if command == "-sex_class":
+        class_sex()
 
 
 # In[ ]:
@@ -404,13 +422,7 @@ for i in range(1,len(sys.argv)):
 
 
 
-# In[ ]:
-
-
-
-
-
-# In[14]:
+# In[13]:
 
 
 #SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA
@@ -431,6 +443,42 @@ if os.getenv("PROD") == None:
 
     command = "docker build -t cloud_titanic ."
     os.system(command)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
