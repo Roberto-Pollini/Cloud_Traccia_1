@@ -291,7 +291,43 @@ df['class_summed']=df['Pclass'].value_counts()
 df['eta_count']= df["Age"].value_counts()
 
 
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[17]:
+
+
+df['Survived']=np.where(df['Survived']==1 , 'sopravvissuti', 'deceduti')
+
+
+# In[ ]:
+
+
+
+
+
 # In[11]:
+
+
+
+
+
+# In[12]:
 
 
 l_param = []
@@ -319,14 +355,18 @@ def totale_sopravvissuti():
 def classe_viaggio(): 
     titolo = "Classe di appartenenza"
     plt.title(titolo, fontsize=15)
-    ax = plt.subplot(111)
-    ax.bar(df["prima classe"], df['class_summed'], width=0.5, color='r', align='center')
-    ax.bar(df["seconda classe"], df['class_summed'], width=0.5, color='b', align='center')
-    ax.bar(df["terza classe"], df['class_summed'], width=0.5, color='r', align='center')
-    ax.legend(["prima", "seconda","terza"])
+    df['prima_classe'] = np.where(df['Pclass']== 1 , 1 , 0)
+    df['seconda_classe'] = np.where(df['Pclass']== 2 , 1 , 0)
+    df['terza_classe'] = np.where(df['Pclass']== 3 , 1 , 0)
+    data = {'prima_classe': int((df['prima_classe']).sum()) , 'seconda_classe': int((df['seconda_classe']).sum()), 'terza_classe': int((df['terza_classe']).sum())}
+    names = list(data.keys())
+    values = list(data.values())
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.bar(names,values)
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-    #rel_tg.add_msg(filename,"img",titolo,filename)
+
     
 def eta():
     titolo = "età dei passeggeri"
@@ -340,7 +380,7 @@ def eta():
     
 
 
-# In[12]:
+# In[13]:
 
 
 #DA QUI INIZIA IL NOSTRO MAIN, VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
@@ -370,7 +410,7 @@ for i in range(1,len(sys.argv)):
 
 
 
-# In[13]:
+# In[14]:
 
 
 #SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA
