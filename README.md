@@ -12,11 +12,11 @@ To launch the main.py script in the docker you have to digit:
 python3 main.py <OPTIONS>
   
 The options for this app can be:
-  *"-?"
-  *"-survived"
-  *"-class"
-  *"-age"
-  *"-sex_class"
+  * "-?"
+  * "-survived"
+  * "-class"
+  * "-age"
+  * "-sex_class"
   
 "-?": Lists all possible searchable fields
 
