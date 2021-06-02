@@ -1,15 +1,15 @@
 # Cloud_Traccia_1
 
-The app is based on titanic dataset. The .csv file has been retrieved from https://github.com/awesomedata/awesome-public-datasets/blob/master/Datasets/titanic.csv.zip 
-The folder has a Dockerfile and a requirement.txt file. The Dockerfile give the instruction for the docker execution and the requirement.txt file is the list of packages required from the docker to run the app. Bulding the container will take packages and dependances from the requirement.txt file.
+The app is based on titanic dataset. The titanic.csv file has been retrieved from this [link](https://github.com/awesomedata/awesome-public-datasets/blob/master/Datasets/titanic.csv.zip). 
+The root folder has a Dockerfile and a requirements.txt file. The Dockerfile gives the instructions for the docker execution and the requirements.txt file is the list of packages required from the docker to run the app. Bulding the container will take packages and dependences from the requirements.txt file.
 
-## Step 1: Run the main.ipynb notebook
+## Step 1: Run the main.ipynb notebook 
 After this run will be produced a folder named titanic and a main.py script. Secondly, the notebook will create a docker image named cloud_titanic and from the command or the dashbboard you can launch the docker.
 
-## Step 2: Launch main.py script 
-To launch the main.py script in the docker you have to digit:
+## Step 2: Run the main.py script 
+To run the main.py script in the docker container you have to digit:
 
-python3 main.py <OPTIONS>
+python3 main.py _OPTION_ 
   
 The options for this app can be:
   * "-?"
