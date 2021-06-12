@@ -5,4 +5,7 @@ WORKDIR /home
 RUN pip install -r requirements.txt
 #RUN rm requirements.txt
 ENV PROD "True"
-ENTRYPOINT ["python","main.py"]
+CMD ["-?"]
+ENTRYPOINT ["python","main.py","$OPERATION"]
+
+

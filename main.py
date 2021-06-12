@@ -25,13 +25,6 @@ from datetime import timedelta,date
 # In[2]:
 
 
-#versione di seaborn
-sns.__version__
-
-
-# In[3]:
-
-
 #CONSIDERIAMO PATH ASSOLUTO (EVENTUALE SVILUPPO CON CRON)
 path_abs = str(pathlib.Path().parent.absolute())
 
@@ -40,23 +33,12 @@ path_materiale = str(path_abs+"/titanic/")
 file_path = str(path_abs+"/titanic/")
 
 
-# In[4]:
+# In[3]:
 
 
-#print il path del materiale
-path_materiale 
-
-#file_path
-#path_abs
-
-
-# In[5]:
-
-
-#####################################
 #CONTROLLO ESISTENZA PERCORSI E FILE
 #COLLEZIONO LOG
-#####################################
+
 log = []
 def check_dir(log):
     if os.path.isdir(path_materiale) == False:
@@ -77,7 +59,7 @@ def check_dir(log):
         log.append({"desc":"Directory data esiste già","code":"0"})
 
 
-# In[6]:
+# In[4]:
 
 
 #inizializzazione
@@ -89,13 +71,13 @@ df = pd.read_csv(file, encoding = "utf-8 ")
 df.shape
 
 
-# In[7]:
+# In[5]:
 
 
 df.head(20)
 
 
-# In[8]:
+# In[6]:
 
 
 #Possiamo loggare tutti gli errori da debug in su (info, warning, error e critical)
@@ -103,25 +85,25 @@ logging.basicConfig(filename=path_materiale+'main.log', filemode='a+', format='%
 logger = logging.getLogger()
 
 
-# In[9]:
+# In[7]:
 
 
 df['count_survived']=df['Survived'].value_counts()
 
 
-# In[10]:
+# In[8]:
 
 
 df['class_summed']=df['Pclass'].value_counts()
 
 
-# In[11]:
+# In[9]:
 
 
 df['eta_count']= df["Age"].value_counts()
 
 
-# In[12]:
+# In[10]:
 
 
 l_param = []
@@ -194,16 +176,10 @@ def eta():
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
 
 
-# In[ ]:
+# In[11]:
 
 
-
-
-
-# In[13]:
-
-
-#DA QUI INIZIA IL NOSTRO MAIN, VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
+#VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
 
 for i in range(1,len(sys.argv)):
     command = sys.argv[i]
@@ -226,7 +202,7 @@ for i in range(1,len(sys.argv)):
 
 
 
-# In[14]:
+# In[ ]:
 
 
 #SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA
@@ -244,9 +220,32 @@ if os.getenv("PROD") == None:
 
     command = "docker rmi cloud_titanic"
     os.system(command)
+    
+    #command = "docker run -e OPERATION = command -v cloud_titanic"
+    #os.system(command)
+    
+    #command = "docker run -v $(PWD) -e DATASET= titanic.csv"
+    #os.system(command)
 
     command = "docker build -t cloud_titanic ."
     os.system(command)
+    
+    command = "docker run -it cloud_titanic ."
+    os.system(command)
+    
+    
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
