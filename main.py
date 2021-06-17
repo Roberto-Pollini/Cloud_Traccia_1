@@ -26,14 +26,65 @@ from datetime import timedelta,date
 
 
 #CONSIDERIAMO PATH ASSOLUTO (EVENTUALE SVILUPPO CON CRON)
-path_abs = str(pathlib.Path().parent.absolute())
+path =pathlib.Path('.').parent.absolute()
 
-#PATH DI DESTINAZIONE DEL MATERIALE GENERATO
-path_materiale = str(path_abs+"/titanic/")
-file_path = str(path_abs+"/titanic/")
+#path_materiale = (str (path.resolve().parents[0])+"/response/")
+#file_path = (str (path.resolve().parents[0])+"/data/")
+path_abs = str(pathlib.Path('.').parent.absolute())
 
 
 # In[3]:
+
+
+#path_abs = str(pathlib.Path().parent.absolute())
+#PATH DI DESTINAZIONE DEL MATERIALE GENERATO
+path_materiale = "{}/materiale/results/".format(path_abs)
+#path_materiale = str(path_abs+"/materiale/")
+#file_path = "{}/materiale/".format(path_abs)
+#file_path = str(path_abs+"/data/")
+
+
+# In[4]:
+
+
+def check_dir():
+    if os.path.isdir(path_materiale) == False:
+        try: 
+            os.mkdir(path_materiale)
+
+        except OSError as error:
+            return(["error",'Errore nella creazione della directory "{}"'.format(path_materiale)])
+
+    if os.path.isdir(path_materiale) == True:
+        return(["info",'La directory "{}" è stata creata correttamente'.format(path_materiale)])
+
+res = check_dir()
+
+
+# In[5]:
+
+
+
+
+
+# In[6]:
+
+
+#CONSIDERIAMO PATH ASSOLUTO (EVENTUALE SVILUPPO CON CRON)
+#path_abs = str(pathlib.Path().parent.absolute())
+
+#PATH DI DESTINAZIONE DEL MATERIALE GENERATO
+#path_materiale = str(path_abs+"/titanic/")
+file_path = str(path_abs+"/titanic/")
+
+
+# In[7]:
+
+
+path_materiale
+
+
+# In[8]:
 
 
 #CONTROLLO ESISTENZA PERCORSI E FILE
@@ -59,51 +110,57 @@ def check_dir(log):
         log.append({"desc":"Directory data esiste già","code":"0"})
 
 
-# In[4]:
+# In[9]:
 
 
 #inizializzazione
 check_dir(log)
 
 #LETTURA DEL FILE E CREAZIONE DEL DATAFRAME
-file = str('titanic.csv')
+file = str(file_path +'titanic.csv')
 df = pd.read_csv(file, encoding = "utf-8 ")
 df.shape
 
 
-# In[5]:
+# In[10]:
+
+
+file_path
+
+
+# In[11]:
 
 
 df.head(20)
 
 
-# In[6]:
+# In[12]:
 
 
 #Possiamo loggare tutti gli errori da debug in su (info, warning, error e critical)
-logging.basicConfig(filename=path_materiale+'main.log', filemode='a+', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger()
+#logging.basicConfig(filename=path_materiale+'main.log', filemode='a+', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+#logger = logging.getLogger()
 
 
-# In[7]:
+# In[13]:
 
 
 df['count_survived']=df['Survived'].value_counts()
 
 
-# In[8]:
+# In[14]:
 
 
 df['class_summed']=df['Pclass'].value_counts()
 
 
-# In[9]:
+# In[15]:
 
 
 df['eta_count']= df["Age"].value_counts()
 
 
-# In[10]:
+# In[16]:
 
 
 l_param = []
@@ -118,6 +175,7 @@ def list_parameters():
     print ('LISTA DEI CAMPI A DISPOSIZIONE:\n')
     for i in l_param:
         print("{}\n-- {}\n\n".format(i["value"],i["desc"]))
+
     
 def totale_sopravvissuti(): 
     df['Survived']=np.where(df['Survived']==1 , 'sopravvissuti', 'deceduti')
@@ -128,8 +186,9 @@ def totale_sopravvissuti():
     plt.barh(df["Survived"],df['count_survived'])
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-
 def classe_viaggio(): 
+    print(path_materiale)
+    print('ciao')
     titolo = "Classe di appartenenza"
     df['prima_classe'] = np.where(df['Pclass']== 1 , 1 , 0)
     df['seconda_classe'] = np.where(df['Pclass']== 2 , 1 , 0)
@@ -143,7 +202,7 @@ def classe_viaggio():
     plt.title(titolo, fontsize=15)
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-
+    print(titolo)
 def class_sex():
     titolo = "percentuale di sopravvissuti divisi per sesso e classe"
     sns.set_theme(style="whitegrid")
@@ -176,7 +235,7 @@ def eta():
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
 
 
-# In[11]:
+# In[17]:
 
 
 #VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
@@ -196,13 +255,13 @@ for i in range(1,len(sys.argv)):
         class_sex()
 
 
-# In[ ]:
+# In[19]:
 
 
+check_dir()
 
 
-
-# In[ ]:
+# In[18]:
 
 
 #SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA
@@ -218,6 +277,7 @@ if os.getenv("PROD") == None:
         subprocess.check_call(['docker', 'stop'] + container_ids)
         subprocess.check_call(['docker', 'rm'] + container_ids)
 
+### rimuovo tutte le immagini preesistenti di cloud_titanic        
     command = "docker rmi cloud_titanic"
     os.system(command)
     
@@ -226,12 +286,16 @@ if os.getenv("PROD") == None:
     
     #command = "docker run -v $(PWD) -e DATASET= titanic.csv"
     #os.system(command)
-
+    #command = ""
+#creo la mia immagine 
     command = "docker build -t cloud_titanic ."
     os.system(command)
     
-    command = "docker run -it cloud_titanic ."
-    os.system(command)
+  
+
+    #command = "docker run -it --entrypoint /bin/bash cloud_titanic"
+    #command = "docker run -it cloud_titanic ."
+    #os.system(command)
     
     
 
