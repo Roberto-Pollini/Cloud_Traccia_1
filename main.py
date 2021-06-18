@@ -4,6 +4,7 @@
 # In[1]:
 
 
+#importo tutto 
 import pandas as pd
 import requests
 from collections import defaultdict
@@ -25,142 +26,117 @@ from datetime import timedelta,date
 # In[2]:
 
 
-#CONSIDERIAMO PATH ASSOLUTO (EVENTUALE SVILUPPO CON CRON)
-path =pathlib.Path('.').parent.absolute()
-
-#path_materiale = (str (path.resolve().parents[0])+"/response/")
-#file_path = (str (path.resolve().parents[0])+"/data/")
-path_abs = str(pathlib.Path('.').parent.absolute())
+#dichiaro i vari percorsi 
+path_abs = str(pathlib.Path().parent.absolute())
+path_materiale = "{}/materiale/results/".format(path_abs)
+file_path = "{}/materiale/".format(path_abs)
 
 
 # In[3]:
 
 
-#path_abs = str(pathlib.Path().parent.absolute())
-#PATH DI DESTINAZIONE DEL MATERIALE GENERATO
-path_materiale = "{}/materiale/results/".format(path_abs)
-#path_materiale = str(path_abs+"/materiale/")
-#file_path = "{}/materiale/".format(path_abs)
-#file_path = str(path_abs+"/data/")
+#creo le cartelle 
+def check_dir(path_materiale):
+    print(path_abs)
+    if os.path.isdir(path_materiale) == False:
+        
+        try: 
+            os.makedirs(path_materiale)
+            logger.info("cartella {} fatta.".format(path_materiale))
+
+        except OSError as error:
+            logger.info("errore1")
+            return(["error",'Errore nella creazione della directory "{}"'.format(path_materiale)])
+
+    if os.path.isdir(path_materiale) == True:
+        print("errore2")
+        return(["info",'La directory "{}" è stata creata correttamente'.format(path_materiale)])
+
+res = check_dir(path_materiale)
+
+logging.basicConfig(handlers=[logging.FileHandler(filename=path_materiale+'filelog.log', encoding='utf-8', mode='a+')],format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 
 # In[4]:
 
 
-def check_dir():
-    if os.path.isdir(path_materiale) == False:
-        try: 
-            os.mkdir(path_materiale)
+#####################################
+#CONTROLLO ESISTENZA PERCORSI E FILE
+#COLLEZIONO LOG
+#####################################
+#se si trova nella cartella principale lo carico da la e il path è abs sennò lo carico dentro materiale in modo da darlo anche all'utente
 
-        except OSError as error:
-            return(["error",'Errore nella creazione della directory "{}"'.format(path_materiale)])
+file_locale = ""
+def down_file(url, filename):
+    if "titanic" in filename:
+        filename = "titanic.csv"
 
-    if os.path.isdir(path_materiale) == True:
-        return(["info",'La directory "{}" è stata creata correttamente'.format(path_materiale)])
+    try:
+        print('sto scaricando il file' )
+        response = requests.get(url)
+        if response.status_code == 200:
+            with open(file_path+filename, 'wb') as f:
+                for chunk in response.iter_content():
+                    if chunk: # filter out keep-alive new chunks
+                        f.write(chunk)
+    
+        else:
+            print('Errore diverso da 200')
 
-res = check_dir()
+    except Exception as e:
+        print('Errore per scaricare il file')
+    
+    return file_path+filename
 
 
 # In[5]:
 
 
-
+def check_file():
+    file_list = []
+    
+    #Get the list of all files and directories
+    dir_list = os.listdir(file_path)
+    
+    #controlliamo se esistono entrambi i file, sennò scarichiamo
+    f_v = f_p = False
+    for file in dir_list:
+        if "csv" and "titanic" in file:
+            f_p = True
+            file_list.append({'titanic': "{}/{}".format(file_path,file)}) 
+        
+    #se sono presenti entrambi esco e elaboro dalla dir principale       
+    if f_p == True:
+        print('Esiste il file' )
+        return file_list
+    
+    #li scarico in materiale e li fornisco    
+    else:
+        #se non trovo il file, lo scarico
+        file_list = []
+        url = "https://gist.githubusercontent.com/michhar/2dfd2de0d4f8727f873422c5d959fff5/raw/fa71405126017e6a37bea592440b4bee94bf7b9e/titanic.csv"
+        file_list.append({'titanic!': down_file(url,"titanic!")})
+        print('Scarico il file in' + str(file_list))
+        return file_list
 
 
 # In[6]:
 
 
-#CONSIDERIAMO PATH ASSOLUTO (EVENTUALE SVILUPPO CON CRON)
-#path_abs = str(pathlib.Path().parent.absolute())
+#vado nel path materiale e seleziono il file
+check_dir(path_materiale)
+filename = check_file()
 
-#PATH DI DESTINAZIONE DEL MATERIALE GENERATO
-#path_materiale = str(path_abs+"/titanic/")
-file_path = str(path_abs+"/titanic/")
-
-
-# In[7]:
-
-
-path_materiale
-
-
-# In[8]:
-
-
-#CONTROLLO ESISTENZA PERCORSI E FILE
-#COLLEZIONO LOG
-
-log = []
-def check_dir(log):
-    if os.path.isdir(path_materiale) == False:
-        try: 
-            os.mkdir(path_materiale) 
-        except OSError as error: 
-            log.append({"desc":"Errore nella creazione della directory titanic","code":error})
-    else:
-        log.append({"desc":"Directory materiale esiste già","code":"0"})
-
-
-    if os.path.isdir(file_path) == False:
-        try: 
-            os.mkdir(file_path) 
-        except OSError as error:
-            log.append({"desc":"Errore nella creazione della directory data","code":error})
-    else:
-        log.append({"desc":"Directory data esiste già","code":"0"})
-
-
-# In[9]:
-
-
-#inizializzazione
-check_dir(log)
-
-#LETTURA DEL FILE E CREAZIONE DEL DATAFRAME
+#leggo il file csv
 file = str(file_path +'titanic.csv')
 df = pd.read_csv(file, encoding = "utf-8 ")
 df.shape
-
-
-# In[10]:
-
-
-file_path
-
-
-# In[11]:
-
-
-df.head(20)
-
-
-# In[12]:
-
-
-#Possiamo loggare tutti gli errori da debug in su (info, warning, error e critical)
-#logging.basicConfig(filename=path_materiale+'main.log', filemode='a+', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
-#logger = logging.getLogger()
-
-
-# In[13]:
-
-
 df['count_survived']=df['Survived'].value_counts()
-
-
-# In[14]:
-
-
 df['class_summed']=df['Pclass'].value_counts()
-
-
-# In[15]:
-
-
 df['eta_count']= df["Age"].value_counts()
 
 
-# In[16]:
+# In[7]:
 
 
 l_param = []
@@ -170,13 +146,11 @@ l_param.append({"value":"-class","desc":"Classe di appertenenza del passeggero"}
 l_param.append({"value":"-age","desc":"età dei passeggeri"})
 l_param.append({"value":"-sex_class","desc":"percentuale sopravvissuti per sesso e classe "})
 
-
 def list_parameters():
     print ('LISTA DEI CAMPI A DISPOSIZIONE:\n')
     for i in l_param:
         print("{}\n-- {}\n\n".format(i["value"],i["desc"]))
 
-    
 def totale_sopravvissuti(): 
     df['Survived']=np.where(df['Survived']==1 , 'sopravvissuti', 'deceduti')
     fig, ax = plt.subplots(figsize=(8,4))
@@ -204,17 +178,20 @@ def classe_viaggio():
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
     print(titolo)
 def class_sex():
-    titolo = "percentuale di sopravvissuti divisi per sesso e classe"
+    titolo = "percentuale_di_sopravvissuti_divisi_per_sesso_e_classe"
     sns.set_theme(style="whitegrid")
     g = sns.catplot(data=df, kind="bar",x='Sex', y ='Survived' ,  hue="Pclass", palette="dark", alpha=.6, height=6)
     g.despine(left=True)
     g.set_axis_labels("", "% di sopravvissuti per sesso e classe ")
     g.legend.set_title("")
     filename = "{}.png".format(titolo)
-    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-
+    try:
+        plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+        print('ha printato ')
+    except:
+        print('non ha scaricato ')
 def eta():
-    titolo = "età dei passeggeri"   
+    titolo = "eta_deipasseggeri"   
     df['cat_age']=np.where(df['Age']<10, "0-10", df['Age'])
     df['cat_age']=np.where(((df['Age']<20) & (df['Age']>=10)), "10-20", df['cat_age'])
     df['cat_age']=np.where(((df['Age']<30) & (df['Age']>=20)), "20-30", df['cat_age'])
@@ -235,7 +212,7 @@ def eta():
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
 
 
-# In[17]:
+# In[8]:
 
 
 #VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
@@ -255,21 +232,15 @@ for i in range(1,len(sys.argv)):
         class_sex()
 
 
-# In[19]:
-
-
-check_dir()
-
-
-# In[18]:
+# In[9]:
 
 
 #SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA
 if os.getenv("PROD") == None:
-    
     command = "jupyter nbconvert --to 'script' main.ipynb"
     os.system(command)
-    #stoppo ed elimino eventuali contenitori aperti in modo da poter cancellare e ribuildare l'immagine senza crearne di nuove
+    
+    #fermo ed elimino eventuali contenitori aperti in modo da poter cancellare e ribuildare l'immagine senza crearne di nuove
     import subprocess
     container_ids = subprocess.check_output(['docker', 'ps', '-aq'], encoding='ascii')
     container_ids = container_ids.strip().split()
@@ -277,7 +248,7 @@ if os.getenv("PROD") == None:
         subprocess.check_call(['docker', 'stop'] + container_ids)
         subprocess.check_call(['docker', 'rm'] + container_ids)
 
-### rimuovo tutte le immagini preesistenti di cloud_titanic        
+    #rimuovo tutte le immagini preesistenti di cloud_titanic        
     command = "docker rmi cloud_titanic"
     os.system(command)
     
@@ -287,17 +258,26 @@ if os.getenv("PROD") == None:
     #command = "docker run -v $(PWD) -e DATASET= titanic.csv"
     #os.system(command)
     #command = ""
-#creo la mia immagine 
+    
+    #creo la mia immagine 
     command = "docker build -t cloud_titanic ."
     os.system(command)
-    
-  
 
     #command = "docker run -it --entrypoint /bin/bash cloud_titanic"
     #command = "docker run -it cloud_titanic ."
     #os.system(command)
-    
-    
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
