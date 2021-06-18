@@ -1,6 +1,6 @@
 FROM python:slim-buster
 #COPY . /home
-FROM ubuntu:18.04
+#FROM ubuntu:18.04
 #RUN apt update
 #RUN apt install -y python3-pip
 #RUN pip3 install --upgrade pip
