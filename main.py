@@ -160,7 +160,7 @@ df['class_summed']=df['Pclass'].value_counts()
 df['eta_count']= df["Age"].value_counts()
 
 
-# In[13]:
+# In[8]:
 
 
 l_param = []
@@ -179,16 +179,25 @@ def totale_sopravvissuti():
     logger.info("chiamata funzione totale_sopravvissuti")
 
     df['Survived']=np.where(df['Survived']==1 , 'sopravvissuti', 'deceduti')
-    fig, ax = plt.subplots(figsize=(8,4))
+    '''fig, ax = plt.subplots(figsize=(8,4))
     titolo = "Passeggeri sopravvissuti"
     plt.title(titolo, fontsize=15)
     plt.xticks(rotation=75)
     plt.barh(df["Survived"],df['count_survived'])
     filename = "{}.png".format(titolo)
-    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)'''
     if operation == "print":
         print("sopravvissuti: " + str(df['count_survived'][1]))
         print("non sopravvissuti: " + str(df['count_survived'][0]))
+    else:
+        fig, ax = plt.subplots(figsize=(8,4))
+        titolo = "Passeggeri sopravvissuti"
+        plt.title(titolo, fontsize=15)
+        plt.xticks(rotation=75)
+        plt.barh(df["Survived"],df['count_survived'])
+        filename = "{}.png".format(titolo)
+        plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+        
     
 def classe_viaggio():
     logger.info("chiamata funzione classe_viaggio")
@@ -197,17 +206,27 @@ def classe_viaggio():
     df['seconda_classe'] = np.where(df['Pclass']== 2 , 1 , 0)
     df['terza_classe'] = np.where(df['Pclass']== 3 , 1 , 0)
     data = {'prima_classe': int((df['prima_classe']).sum()) , 'seconda_classe': int((df['seconda_classe']).sum()), 'terza_classe': int((df['terza_classe']).sum())}
-    names = list(data.keys())
+    '''names = list(data.keys())
     values = list(data.values())
     fig = plt.figure()
     ax = fig.add_axes([0,0,1,1])
     ax.bar(names,values)
     plt.title(titolo, fontsize=15)
     filename = "{}.png".format(titolo)
-    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)'''
     if operation == "print":
         print("numero di sopravvissuti per classe di biglietto: \n" )
         print(data)
+    else:
+        names = list(data.keys())
+        values = list(data.values())
+        fig = plt.figure()
+        ax = fig.add_axes([0,0,1,1])
+        ax.bar(names,values)
+        plt.title(titolo, fontsize=15)
+        filename = "{}.png".format(titolo)
+        plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+
     
 def class_sex():
     logger.info("chiamata funzione class_sex")
@@ -222,13 +241,13 @@ def class_sex():
     
     #facciamo un try catch perchè catplot si comporta in modo anomalo randomicamente
     
-    df['male_first']=np.where(df['Sex']=='male'& df['Pclass']== 1, 1, 0)
-    df['male_second']=np.where(df['Sex']=='male'& df['Pclass']==2, 1, 0)
-    df['male_third']=np.where(df['Sex']=='male'& df['Pclass']== 3, 1, 0)
-    df['female_first']=np.where(df['Sex']=='female'& df['Pclass']== 1, 1, 0)
-    df['female_second']=np.where(df['Sex']=='female'& df['Pclass']== 2, 1, 0)
-    df['female_third']=np.where(df['Sex']=='female'& df['Pclass']== 3, 1, 0)
-    
+    df['male_first']=np.where((df['Sex']=='male') & (df['Pclass']== 1), 1, 0)
+    df['male_second']=np.where((df['Sex']=='male')& (df['Pclass']==2), 1, 0)
+    df['male_third']=np.where((df['Sex']=='male')& (df['Pclass']== 3), 1, 0)
+    df['female_first']=np.where((df['Sex']=='female')& (df['Pclass']== 1), 1, 0)
+    df['female_second']=np.where((df['Sex']=='female')& (df['Pclass']== 2), 1, 0)
+    df['female_third']=np.where((df['Sex']=='female')& (df['Pclass']== 3), 1, 0)
+
     data = {'male-first': int((df['male_first']).sum()) ,
             'male_second': int((df['male_second']).sum()) , 
             'male_third': int((df['male_third']).sum()) ,
@@ -238,12 +257,15 @@ def class_sex():
     
     
     try:
-        plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-        logger.info("class_sex plot eseguito correttamente")
+        '''plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+        logger.info("class_sex plot eseguito correttamente")'''
         if operation == "print":
             print("passeggeri divisi per sesso e classe: \n")
             print(data)
-
+        else:
+            plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+            logger.info("class_sex plot eseguito correttamente")
+            
     except:
         logger.info("class_sex errori nella creazione del catplot")
 
@@ -259,27 +281,31 @@ def eta():
     df['cat_age']=np.where(df['Age']>=50, ">50", df['cat_age'])
     
     data = {'0-10': int((df['cat_age']=="0-10").sum()) , '10-20': int((df['cat_age']=="10-20").sum()), 
-        '20-30': int((df['cat_age']=="20-30").sum()), '30-40': int((df['cat_age']=="30-40").sum()), 
-        '40-50': int((df['cat_age']=="40-50").sum()), '>50': int((df['cat_age']==">50").sum())}
-    names = list(data.keys())
+            '20-30': int((df['cat_age']=="20-30").sum()), '30-40': int((df['cat_age']=="30-40").sum()), 
+            '40-50': int((df['cat_age']=="40-50").sum()), '>50': int((df['cat_age']==">50").sum())}
+    '''names = list(data.keys())
     values = list(data.values())
     fig = plt.figure()
     ax = fig.add_axes([0,0,1,1])
     ax.bar(names,values)
     plt.title(titolo, fontsize=15)
     filename = "{}.png".format(titolo)
-    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)'''
     if operation == "print":
-        print("eta dei passeggeri")
+        print("eta dei passeggeri: \n" +str(data))
+    else:
+        names = list(data.keys())
+        values = list(data.values())
+        fig = plt.figure()
+        ax = fig.add_axes([0,0,1,1])
+        ax.bar(names,values)
+        plt.title(titolo, fontsize=15)
+        filename = "{}.png".format(titolo)
+        plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+        
 
 
 # In[9]:
-
-
-df['count_survived']
-
-
-# In[10]:
 
 
 #VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
@@ -299,7 +325,7 @@ for i in range(1,len(sys.argv)):
         class_sex()
 
 
-# In[11]:
+# In[ ]:
 
 
 
@@ -334,12 +360,6 @@ if os.getenv("PROD") == None:
     #command = "docker run -it --entrypoint /bin/bash cloud_titanic"
     #command = "docker run -it cloud_titanic ."
     #os.system(command)
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:

@@ -15,3 +15,15 @@
 2021-06-19 12:05:33,998 - INFO - File titanic trovato in locale
 2021-06-19 12:05:34,072 - INFO - csv convertito in dataframe
 2021-06-19 12:09:53,889 - INFO - NumExpr defaulting to 8 threads.
+2021-06-19 12:13:20,392 - INFO - File titanic trovato in locale
+2021-06-19 12:13:20,603 - INFO - csv convertito in dataframe
+2021-06-19 12:18:26,252 - INFO - File titanic trovato in locale
+2021-06-19 12:18:26,261 - INFO - csv convertito in dataframe
+2021-06-19 12:21:48,022 - INFO - File titanic trovato in locale
+2021-06-19 12:21:48,037 - INFO - csv convertito in dataframe
+2021-06-19 12:24:48,372 - INFO - File titanic trovato in locale
+2021-06-19 12:24:48,383 - INFO - csv convertito in dataframe
+2021-06-19 12:26:45,981 - INFO - File titanic trovato in locale
+2021-06-19 12:26:45,994 - INFO - csv convertito in dataframe
+2021-06-19 12:29:04,267 - INFO - File titanic trovato in locale
+2021-06-19 12:29:04,345 - INFO - csv convertito in dataframe

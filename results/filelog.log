@@ -60,3 +60,10 @@
 2021-06-19 09:54:32,240 - INFO - File titanic trovato in locale
 2021-06-19 09:54:32,250 - INFO - csv convertito in dataframe
 2021-06-19 09:54:32,256 - INFO - chiamata funzione class_sex
+2021-06-19 10:14:37,890 - INFO - File titanic trovato in locale
+2021-06-19 10:14:37,900 - INFO - csv convertito in dataframe
+2021-06-19 10:14:37,906 - INFO - chiamata funzione class_sex
+2021-06-19 10:14:38,760 - INFO - class_sex plot eseguito correttamente
+2021-06-19 10:14:50,169 - INFO - File titanic trovato in locale
+2021-06-19 10:14:50,183 - INFO - csv convertito in dataframe
+2021-06-19 10:14:50,191 - INFO - chiamata funzione eta
