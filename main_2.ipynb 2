@@ -1,0 +1,423 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 105,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#importo tutto \n",
+    "import pandas as pd\n",
+    "import requests\n",
+    "from collections import defaultdict\n",
+    "import datetime as dt\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "import random\n",
+    "import pathlib \n",
+    "from pathlib import Path\n",
+    "import sys\n",
+    "import time\n",
+    "import csv\n",
+    "import os\n",
+    "import logging\n",
+    "import seaborn as sns\n",
+    "from datetime import timedelta,date"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 106,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# dichiaro i vari percorsi \n",
+    "path_abs = str(pathlib.Path().parent.absolute())\n",
+    "path_materiale = \"{}/materiale/results/\".format(path_abs)\n",
+    "file_path = \"{}/materiale/\".format(path_abs)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 107,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "C:\\Users\\lyk\\Desktop\\roby\\Cloud_Traccia_1\n",
+      "errore 2 \n"
+     ]
+    }
+   ],
+   "source": [
+    "#creo le cartelle \n",
+    "def check_dir(path_materiale):\n",
+    "    print(path_abs)\n",
+    "    if os.path.isdir(path_materiale) == False:\n",
+    "        \n",
+    "        try: \n",
+    "            os.makedirs(path_materiale)\n",
+    "            #print('cartella fatta ')\n",
+    "            logger.info(\"cartella {} fatta.\".format(path_materiale))\n",
+    "\n",
+    "        except OSError as error:\n",
+    "            #print('errore 1 ')\n",
+    "            logger.info(\"errore 1\" )\n",
+    "            return([\"error\",'Errore nella creazione della directory \"{}\"'.format(path_materiale)])\n",
+    "\n",
+    "    if os.path.isdir(path_materiale) == True:\n",
+    "        print('errore 2 ')\n",
+    "        return([\"info\",'La directory \"{}\" è stata creata correttamente'.format(path_materiale)])\n",
+    "\n",
+    "res = check_dir(path_materiale)\n",
+    "\n",
+    "\n",
+    "logging.basicConfig(handlers=[logging.FileHandler(filename=path_materiale+'filelog.log', encoding='utf-8', mode='a+')],format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 108,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#####################################\n",
+    "#CONTROLLO ESISTENZA PERCORSI E FILE\n",
+    "#COLLEZIONO LOG\n",
+    "#####################################\n",
+    "#se si trova nella cartella principale lo carico da la e il path è abs sennò lo carico dentro materiale in modo da darlo anche all'utente\n",
+    "file_locale = \"\"\n",
+    "def down_file(url, filename):\n",
+    "    if \"titanic\" in filename:\n",
+    "        filename = \"titanic.csv\"\n",
+    "    \n",
+    "    #logger.info(\"Non è stato trovato la sorgente {}. Lo sto scaricando dalla rete\".format(filename))\n",
+    "\n",
+    "    try:\n",
+    "        print('sto scaricando il file' )\n",
+    "        response = requests.get(url)\n",
+    "        if response.status_code == 200:\n",
+    "            with open(file_path+filename, 'wb') as f:\n",
+    "                for chunk in response.iter_content():\n",
+    "                    if chunk: # filter out keep-alive new chunks\n",
+    "                        f.write(chunk)\n",
+    "            #log.append({\"desc\":\"Scaricata sorgente dati dati da {}\".format(url),\"code\":response})\n",
+    "          #  logger.info(\"{} è stato scaricato, testo della response: {}\".format(filename,response) )\n",
+    "        else:\n",
+    "            print('wertyu')\n",
+    "           # logger.warning(\"Il sito ha risposto un codice errore diverso da 200 ({})\".format(response.status_code))\n",
+    "\n",
+    "    except Exception as e:\n",
+    "        print('sdfghj')\n",
+    "       # logger.error(\"Qualcosa è andato storto nello scaricare {}\\n{}\".format(filename,e))\n",
+    "    \n",
+    "    return file_path+filename\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 109,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def check_file():\n",
+    "    file_list = []\n",
+    "    \n",
+    "    # Get the list of all files and directories\n",
+    "    dir_list = os.listdir(file_path)\n",
+    "    #controlliamo se esistono entrambi i file, sennò scarichiamo\n",
+    "    f_v = f_p = False\n",
+    "    for file in dir_list:\n",
+    "        if \"csv\" and \"titanic\" in file:\n",
+    "            f_p = True\n",
+    "            file_list.append({'titanic': \"{}/{}\".format(file_path,file)}) \n",
+    "            \n",
+    "              \n",
+    "        \n",
+    "    #se sono presenti entrambi esco e elaboro dalla dir principale       \n",
+    "    if f_p == True:\n",
+    "        print('ce il file' )\n",
+    "       # logger.info(\"I csv vaccini e titanic sono stati trovati in locale {}\".format(file_path))\n",
+    "        return file_list\n",
+    "    \n",
+    "    #li scarico in materiale e li fornisco    \n",
+    "    else:\n",
+    "       # logger.info(\"Non sono stati trovati entrambi i csv titanic in locale {}\".format(file_path))\n",
+    "        file_list = []\n",
+    "        url = \"https://gist.githubusercontent.com/michhar/2dfd2de0d4f8727f873422c5d959fff5/raw/fa71405126017e6a37bea592440b4bee94bf7b9e/titanic.csv\"\n",
+    "       # logger.info(\"Scarico il csv titanic da\\n{}\".format(url))\n",
+    "        file_list.append({'titanic!': down_file(url,\"titanic!\")})\n",
+    "        print('scarico il file in' + str(file_list))\n",
+    "\n",
+    "        \n",
+    "        return file_list"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 110,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "inizio il tutto \n",
+      "C:\\Users\\lyk\\Desktop\\roby\\Cloud_Traccia_1\n",
+      "errore 2 \n",
+      "ce il file\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('inizio il tutto ')\n",
+    "check_dir(path_materiale)\n",
+    "filename = check_file()\n",
+    "\n",
+    "\n",
+    "\n",
+    "#parte che fa cose \n",
+    "file = str(file_path +'titanic.csv')\n",
+    "df = pd.read_csv(file, encoding = \"utf-8 \")\n",
+    "df.shape\n",
+    "\n",
+    "df['count_survived']=df['Survived'].value_counts()\n",
+    "df['class_summed']=df['Pclass'].value_counts()\n",
+    "df['eta_count']= df[\"Age\"].value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 111,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "l_param = []\n",
+    "l_param.append({\"value\":\"-?\",\"desc\":\"Elenca tutti i possibili campi ricercabili\"})\n",
+    "l_param.append({\"value\":\"-survived\",\"desc\":\"Passeggeri sopravvissuti\"})\n",
+    "l_param.append({\"value\":\"-class\",\"desc\":\"Classe di appertenenza del passeggero\"})\n",
+    "l_param.append({\"value\":\"-age\",\"desc\":\"età dei passeggeri\"})\n",
+    "l_param.append({\"value\":\"-sex_class\",\"desc\":\"percentuale sopravvissuti per sesso e classe \"})\n",
+    "\n",
+    "\n",
+    "def list_parameters():\n",
+    "    print ('LISTA DEI CAMPI A DISPOSIZIONE:\\n')\n",
+    "    for i in l_param:\n",
+    "        print(\"{}\\n-- {}\\n\\n\".format(i[\"value\"],i[\"desc\"]))\n",
+    "\n",
+    "    \n",
+    "def totale_sopravvissuti(): \n",
+    "    df['Survived']=np.where(df['Survived']==1 , 'sopravvissuti', 'deceduti')\n",
+    "    fig, ax = plt.subplots(figsize=(8,4))\n",
+    "    titolo = \"Numero di passeggeri sopravvissuti\"\n",
+    "    plt.title(titolo, fontsize=15)\n",
+    "    plt.xticks(rotation=75)\n",
+    "    plt.barh(df[\"Survived\"],df['count_survived'])\n",
+    "    filename = \"{}.png\".format(titolo)\n",
+    "    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)\n",
+    "def classe_viaggio(): \n",
+    "    print(path_materiale)\n",
+    "    print('ciao')\n",
+    "    titolo = \"Classe di appartenenza\"\n",
+    "    df['prima_classe'] = np.where(df['Pclass']== 1 , 1 , 0)\n",
+    "    df['seconda_classe'] = np.where(df['Pclass']== 2 , 1 , 0)\n",
+    "    df['terza_classe'] = np.where(df['Pclass']== 3 , 1 , 0)\n",
+    "    data = {'prima_classe': int((df['prima_classe']).sum()) , 'seconda_classe': int((df['seconda_classe']).sum()), 'terza_classe': int((df['terza_classe']).sum())}\n",
+    "    names = list(data.keys())\n",
+    "    values = list(data.values())\n",
+    "    fig = plt.figure()\n",
+    "    ax = fig.add_axes([0,0,1,1])\n",
+    "    ax.bar(names,values)\n",
+    "    plt.title(titolo, fontsize=15)\n",
+    "    filename = \"{}.png\".format(titolo)\n",
+    "    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)\n",
+    "    print(titolo)\n",
+    "def class_sex():\n",
+    "    titolo = \"percentuale_di_sopravvissuti_divisi_per_sesso_e_classe\"\n",
+    "    sns.set_theme(style=\"whitegrid\")\n",
+    "    g = sns.catplot(data=df, kind=\"bar\",x='Sex', y ='Survived' ,  hue=\"Pclass\", palette=\"dark\", alpha=.6, height=6)\n",
+    "    g.despine(left=True)\n",
+    "    g.set_axis_labels(\"\", \"% di sopravvissuti per sesso e classe \")\n",
+    "    g.legend.set_title(\"\")\n",
+    "    filename = \"{}.png\".format(titolo)\n",
+    "    try:\n",
+    "        plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)\n",
+    "        print('ha printato ')\n",
+    "    except:\n",
+    "        print('non ha scaricato ')\n",
+    "def eta():\n",
+    "    titolo = \"eta_deipasseggeri\"   \n",
+    "    df['cat_age']=np.where(df['Age']<10, \"0-10\", df['Age'])\n",
+    "    df['cat_age']=np.where(((df['Age']<20) & (df['Age']>=10)), \"10-20\", df['cat_age'])\n",
+    "    df['cat_age']=np.where(((df['Age']<30) & (df['Age']>=20)), \"20-30\", df['cat_age'])\n",
+    "    df['cat_age']=np.where(((df['Age']<40) & (df['Age']>=30)), \"30-40\", df['cat_age'])\n",
+    "    df['cat_age']=np.where(((df['Age']<50) & (df['Age']>=40)), \"40-50\", df['cat_age'])\n",
+    "    df['cat_age']=np.where(df['Age']>=50, \">50\", df['cat_age'])\n",
+    "    \n",
+    "    data = {'0-10': int((df['cat_age']==\"0-10\").sum()) , '10-20': int((df['cat_age']==\"10-20\").sum()), \n",
+    "        '20-30': int((df['cat_age']==\"20-30\").sum()), '30-40': int((df['cat_age']==\"30-40\").sum()), \n",
+    "        '40-50': int((df['cat_age']==\"40-50\").sum()), '>50': int((df['cat_age']==\">50\").sum())}\n",
+    "    names = list(data.keys())\n",
+    "    values = list(data.values())\n",
+    "    fig = plt.figure()\n",
+    "    ax = fig.add_axes([0,0,1,1])\n",
+    "    ax.bar(names,values)\n",
+    "    plt.title(titolo, fontsize=15)\n",
+    "    filename = \"{}.png\".format(titolo)\n",
+    "    plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 112,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI\n",
+    "\n",
+    "for i in range(1,len(sys.argv)):\n",
+    "    command = sys.argv[i]\n",
+    "    if command == \"-?\":\n",
+    "        list_parameters()\n",
+    "        quit()\n",
+    "    if command == \"-survived\":\n",
+    "        totale_sopravvissuti()\n",
+    "    if command == \"-class\":\n",
+    "        classe_viaggio()\n",
+    "    if command == \"-age\":\n",
+    "        eta()\n",
+    "    if command == \"-sex_class\":\n",
+    "        class_sex()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 113,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAdoAAAFSCAYAAABVBx4aAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjQuMiwgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy8rg+JYAAAACXBIWXMAAAsTAAALEwEAmpwYAAAhWElEQVR4nO3deVxVdf7H8TexWY4zVg9QM4fmoaKlqURlpsFPG5GCK8ZYgxuWWZaNqWPuW2mu0biXVo5mm6GFoCm2omM4LVQuaWEqltog5r5w2b6/P3p47YoLEF/g4uv5ePR4eL7nnHs+389F353Dufd4GWOMAACAFVdUdgEAAFRnBC0AABYRtAAAWETQAgBgEUELAIBFBC0AABYRtMB5nD59Wm+88Yb149x000169913S7Tt3r171aRJE3355ZeWq/JsI0aM0IMPPljZZQAuPpVdAFAVLV68WMuWLVOPHj0quxSXevXqacOGDapdu3Zll1KljR49WkVFRZVdBuBC0ALnURW/x8Xb21sBAQGVXUaVV6tWrcouAXDDpWNcto4ePaqRI0eqdevWuv322/XII49o165devfddzVr1izt27dPTZo00WeffaaioiK98MILioiIUPPmzXXrrbdqwIABOnToUImPd+TIEQ0ZMkShoaFq166dkpKSim3z4YcfqnPnzrr55psVGRmphQsXus7Ozr103KtXL02fPl0DBgxQixYt1KFDB7311ltur/fWW28pOjpaN998s0JCQtSnTx/t2bPHtf6ll17S3XffrebNm6tTp05ul8t37dqlPn366JZbblFoaKj69++vvXv3utb//PPPevLJJ3XLLbfozjvv1ODBg5Wdne1aX1BQoOeee0533nmnQkJCNHLkSA0ZMkQjRoxwbbNu3TrXfGNjY7V48WI1adLkku/RGSNGjNCgQYPUq1cvhYaG6s033+TSMaocghaXJWOMHn30UR04cECvvPKK3nzzTV133XXq3r272rZtq0ceeUR169bVhg0bFBISokWLFmnJkiUaM2aM1q5dq+eff14ZGRl68cUXS3zMgQMHKjMzU6+88opeeOEFvf766yosLHStX7dunZ566inFx8frvffe09ChQ7VkyRK98MILF3zNJUuWqG7dukpKStLDDz+siRMnatWqVZKk1NRUTZkyRf3791dqaqoWLFigffv2adq0aZKkjz/+WAsXLtSzzz6rtWvXqm/fvpo4caK++OILSdJTTz2l6667TklJSXrjjTd0+PBhjRo1SpJ06tQp9erVS/7+/lq6dKkWLlyo/Px89e7dW3l5eZKkhIQErVixQpMmTVJiYqLy8vL03nvvuWrftm2bHn/8cXXo0EEpKSnq1q2bZsyYUaL36PDhw67t1qxZo44dOyoxMVEdO3Ys8fsBVBgDXIY+/fRTc+ONN5rjx4+7jUdERJj58+ebefPmmfbt27vGP/roI5OWlua27bBhw0x8fHyJjvfDDz+Y4OBg88UXX7jGduzYYYKDg80777xjjDEmLi7OTJ061W2/5ORk06JFC1NYWGh++uknt9fo2bOnue+++9y2Hzp0qHnggQeMMcZ89tlnZuXKlW7rZ82aZe6++25jjDGLFi0ybdu2NVlZWa716enp5uDBg8YYY2655RaTkJBg8vPzjTHG/PTTT+brr782xhiTmJho7rzzTlNQUODa1+l0mlatWpmVK1eaU6dOmRYtWphly5a5rW/Xrp0ZPny4q3/du3d3q2/q1KkmODjYGHPp98gYY4YPH27atm3rtn748OGmd+/eBqgq+B0tLkvbtm1TYWGh7rrrLrdxp9OpnTt36oYbbnAb79Chg77++mvNmDFDu3fv1q5du7Rz507deuutJTpeZmamJKlZs2ausUaNGqlmzZqu5e3bt2vLli1aunSpa6yoqEi5ubnat2+fvLy8ir3ubbfd5rbcsmVLffDBB5Kk22+/XZmZmZo7d6527dql3bt3KzMzU3Xq1JEkORwOLV++XBEREQoODla7du3UuXNnXXvttZJ+PQOfNm2a3nzzTd1xxx36v//7PzkcDlf/Dh06VGz+p0+fdvUvNzdXISEhrnV+fn66+eabXcvbtm1TWFiY2/6hoaH697//7Vp/sffojOuvv75YX4CqhKDFZcnX11e1a9dWYmJisXVXXXWVli1b5jb24osv6qWXXlJsbKzuuusu9evXT0uWLNH+/ftLdLwzIWnOucnK19fX7c99+/Z1hdlv1alTRwcOHCg27uPj/le4qKjIdazk5GSNHj1anTt31q233qqePXtq/fr1SklJkSRde+21SklJUUZGhjZs2KB169bp1Vdf1bRp0+RwOBQfH697771Xn3zyidLT0zVlyhS9+eabevvtt+Xr66tGjRpp7ty5xWqqVauWq9aL3f3r7e190fWXeo/OqFGjxgVfA6gK+B0tLkuNGzfWkSNHJElBQUEKCgrS9ddfr5kzZ+qLL74odvb46quv6sknn9TYsWN1//33q1mzZtqzZ0+J706+8cYbJUlff/21a2zv3r2uGqRfz3CzsrJc9QQFBSkzM9Pt95bn+vbbb92Wv/nmG910002Sfv39bVxcnCZPnqzu3bvrlltu0Y8//uiqefXq1Xrrrbd02223afDgwVqxYoXatm2rlJQUHT58WBMnTlRBQYHuv/9+zZgxQ4sXL9a2bdv03XffqXHjxtq7d69q167tqvXaa6/VlClTlJmZqaCgINWoUUObNm1y1Zafn69t27a5lps0aaLNmze71f/b7S/1HgGegqDFZalNmzZq1aqVBg0apC+//FK7d+/WmDFj9Mknnyg4OFg1a9bU0aNHtWvXLjmdTl1zzTXasGGDdu7cqR07dmjChAn6+uuvXTf+XEpQUJDuvvtuPfPMM/r888+1fft2DR8+XFdccfav4OOPP6733ntPL730krKyspSWlqZx48apRo0a8vPzO+/rbty4UfPnz9fu3bu1ZMkSrVmzRn369JEkXXPNNcrIyNB3332nrKwszZ07V6tXr3bVnJeXp2nTpiklJUX79u3Txo0btW3bNrVs2VJ/+tOftH79eo0bN07fffed9uzZo3fffVd//OMf9Ze//EUOh0NXX321Bg0apC1btigzM1NDhgzRpk2b1LhxY1155ZXq3r27Zs6cqbS0NO3cuVPjxo3Tzz//7PqfmIceekhfffWV5syZo6ysLK1YsUKvvfZaid8jwFMQtLgseXl5ad68eWrUqJH69++v++67T1lZWXrllVfUqFEjderUSfXr11fnzp2VlpamadOm6dixY7rvvvv00EMPuT6q88MPP+j06dMlOmZCQoJat26tJ554Qg8++KDat2/v9rnYsLAwTZ8+XStXrlR0dLTGjRunLl26aMKECRd8zYiICG3evFkxMTF666239Nxzz6lDhw6SpLFjx6pWrVqKi4tTt27dtGXLFk2YMEG//PKL9u/fry5dumjgwIGaM2eOOnXqpBEjRig2NlaPPfaYrrjiCi1YsEDSrx8j6ty5s3744QctXLhQtWrVUo0aNbRo0SLVqFFDvXv3Vrdu3VRQUKBXX33V9TvewYMHq1OnTho2bJi6du0qHx8fhYSE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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 114,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'\\n#SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA\\nif os.getenv(\"PROD\") == None:\\n    \\n    command = \"jupyter nbconvert --to \\'script\\' main_2.ipynb\"\\n    os.system(command)\\n    #stoppo ed elimino eventuali contenitori aperti in modo da poter cancellare e ribuildare l\\'immagine senza crearne di nuove\\n    import subprocess\\n    container_ids = subprocess.check_output([\\'docker\\', \\'ps\\', \\'-aq\\'], encoding=\\'ascii\\')\\n    container_ids = container_ids.strip().split()\\n    if container_ids:\\n        subprocess.check_call([\\'docker\\', \\'stop\\'] + container_ids)\\n        subprocess.check_call([\\'docker\\', \\'rm\\'] + container_ids)\\n\\n### rimuovo tutte le immagini preesistenti di cloud_titanic        \\n    command = \"docker rmi cloud_titanic\"\\n    os.system(command)\\n    \\n    #command = \"docker run -e OPERATION = command -v cloud_titanic\"\\n    #os.system(command)\\n    \\n    #command = \"docker run -v $(PWD) -e DATASET= titanic.csv\"\\n    #os.system(command)\\n    #command = \"\"\\n#creo la mia immagine \\n\\n\\n    command = \"docker build -t cloud_titanic .\"\\n    os.system(command)\\n\\n    #command = \"docker run -it --entrypoint /bin/bash cloud_titanic\"\\n    #command = \"docker run -it cloud_titanic .\"\\n    #os.system(command)\\n'"
+      ]
+     },
+     "execution_count": 114,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "'''\n",
+    "#SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA\n",
+    "if os.getenv(\"PROD\") == None:\n",
+    "    \n",
+    "    command = \"jupyter nbconvert --to 'script' main_2.ipynb\"\n",
+    "    os.system(command)\n",
+    "    #stoppo ed elimino eventuali contenitori aperti in modo da poter cancellare e ribuildare l'immagine senza crearne di nuove\n",
+    "    import subprocess\n",
+    "    container_ids = subprocess.check_output(['docker', 'ps', '-aq'], encoding='ascii')\n",
+    "    container_ids = container_ids.strip().split()\n",
+    "    if container_ids:\n",
+    "        subprocess.check_call(['docker', 'stop'] + container_ids)\n",
+    "        subprocess.check_call(['docker', 'rm'] + container_ids)\n",
+    "\n",
+    "### rimuovo tutte le immagini preesistenti di cloud_titanic        \n",
+    "    command = \"docker rmi cloud_titanic\"\n",
+    "    os.system(command)\n",
+    "    \n",
+    "    #command = \"docker run -e OPERATION = command -v cloud_titanic\"\n",
+    "    #os.system(command)\n",
+    "    \n",
+    "    #command = \"docker run -v $(PWD) -e DATASET= titanic.csv\"\n",
+    "    #os.system(command)\n",
+    "    #command = \"\"\n",
+    "#creo la mia immagine \n",
+    "\n",
+    "\n",
+    "    command = \"docker build -t cloud_titanic .\"\n",
+    "    os.system(command)\n",
+    "\n",
+    "    #command = \"docker run -it --entrypoint /bin/bash cloud_titanic\"\n",
+    "    #command = \"docker run -it cloud_titanic .\"\n",
+    "    #os.system(command)\n",
+    "'''"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.8"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

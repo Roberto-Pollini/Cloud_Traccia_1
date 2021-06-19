@@ -35,29 +35,46 @@ file_path = "{}/materiale/".format(path_abs)
 # In[3]:
 
 
-#creo le cartelle 
+#definizione var ambiente per decidere output
+#se OUT e definita al momento del dockerrun allora la segue, sennò di default non printa nulla
+operation = ""
+'''
+os.environ['OPERATION'] = "print"
+os.environ['PROD'] = "print"
+'''
+
+if os.getenv("OPERATION") is not None:
+    operation = os.getenv("OPERATION")
+    
+
+
+# In[4]:
+
+
+#non loggo perchè la creo direttamente nel dockerfile
 def check_dir(path_materiale):
-    print(path_abs)
+    #in qualunque caso istanzio il logger
+    
     if os.path.isdir(path_materiale) == False:
-        
         try: 
             os.makedirs(path_materiale)
-            logger.info("cartella {} fatta.".format(path_materiale))
-
+            
         except OSError as error:
-            logger.info("errore1")
-            return(["error",'Errore nella creazione della directory "{}"'.format(path_materiale)])
-
+            print("error")
+    
+    #se esiste non loggo nulla
     if os.path.isdir(path_materiale) == True:
-        print("errore2")
-        return(["info",'La directory "{}" è stata creata correttamente'.format(path_materiale)])
+        #print("la directory esiste")
+        pass
+
 
 res = check_dir(path_materiale)
 
 logging.basicConfig(handlers=[logging.FileHandler(filename=path_materiale+'filelog.log', encoding='utf-8', mode='a+')],format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger()
 
 
-# In[4]:
+# In[5]:
 
 
 #####################################
@@ -68,11 +85,9 @@ logging.basicConfig(handlers=[logging.FileHandler(filename=path_materiale+'filel
 
 file_locale = ""
 def down_file(url, filename):
-    if "titanic" in filename:
-        filename = "titanic.csv"
-
     try:
-        print('sto scaricando il file' )
+        logger.info("sto scaricando il file")
+
         response = requests.get(url)
         if response.status_code == 200:
             with open(file_path+filename, 'wb') as f:
@@ -81,15 +96,15 @@ def down_file(url, filename):
                         f.write(chunk)
     
         else:
-            print('Errore diverso da 200')
+            logger.info("Errore diverso da 200")
 
     except Exception as e:
-        print('Errore per scaricare il file')
+        logger.info("Errore nel scaricare il file")
     
     return file_path+filename
 
 
-# In[5]:
+# In[6]:
 
 
 def check_file():
@@ -97,30 +112,38 @@ def check_file():
     
     #Get the list of all files and directories
     dir_list = os.listdir(file_path)
-    
-    #controlliamo se esistono entrambi i file, sennò scarichiamo
-    f_v = f_p = False
+    file_count = 0
     for file in dir_list:
-        if "csv" and "titanic" in file:
-            f_p = True
-            file_list.append({'titanic': "{}/{}".format(file_path,file)}) 
-        
-    #se sono presenti entrambi esco e elaboro dalla dir principale       
-    if f_p == True:
-        print('Esiste il file' )
-        return file_list
+        if os.path.isfile(file_path+file):
+            file_count = file_count+1
     
-    #li scarico in materiale e li fornisco    
-    else:
+    #se non ci sono file per forza lo scarico
+    if file_count == 0:
+        #print("file non trovato lo scarico")
         #se non trovo il file, lo scarico
-        file_list = []
         url = "https://gist.githubusercontent.com/michhar/2dfd2de0d4f8727f873422c5d959fff5/raw/fa71405126017e6a37bea592440b4bee94bf7b9e/titanic.csv"
-        file_list.append({'titanic!': down_file(url,"titanic!")})
-        print('Scarico il file in' + str(file_list))
+        file_list.append({'titanic': down_file(url,"titanic.csv")})
+        logger.info("file titanic scaricato")
         return file_list
 
 
-# In[6]:
+    #controllo se esiste il un file titanic.csv
+    for file in dir_list:
+        if os.path.isfile(file_path+file):
+            if "csv" and "titanic" in file:
+                #print(file)
+
+                logger.info("File titanic trovato in locale")
+
+            #se esiste ritorno il nome del file e abbiamo vinto
+                file_list.append({'titanic': "{}/{}".format(file_path,file)}) 
+                #print("file trovato")
+                return file_list
+
+        
+
+
+# In[7]:
 
 
 #vado nel path materiale e seleziono il file
@@ -130,13 +153,14 @@ filename = check_file()
 #leggo il file csv
 file = str(file_path +'titanic.csv')
 df = pd.read_csv(file, encoding = "utf-8 ")
-df.shape
+logger.info("csv convertito in dataframe")
+
 df['count_survived']=df['Survived'].value_counts()
 df['class_summed']=df['Pclass'].value_counts()
 df['eta_count']= df["Age"].value_counts()
 
 
-# In[7]:
+# In[13]:
 
 
 l_param = []
@@ -147,22 +171,27 @@ l_param.append({"value":"-age","desc":"età dei passeggeri"})
 l_param.append({"value":"-sex_class","desc":"percentuale sopravvissuti per sesso e classe "})
 
 def list_parameters():
-    print ('LISTA DEI CAMPI A DISPOSIZIONE:\n')
+    print ('LISTA DELLE METRICHE A DISPOSIZIONE:\n')
     for i in l_param:
         print("{}\n-- {}\n\n".format(i["value"],i["desc"]))
 
 def totale_sopravvissuti(): 
+    logger.info("chiamata funzione totale_sopravvissuti")
+
     df['Survived']=np.where(df['Survived']==1 , 'sopravvissuti', 'deceduti')
     fig, ax = plt.subplots(figsize=(8,4))
-    titolo = "Numero di passeggeri sopravvissuti"
+    titolo = "Passeggeri sopravvissuti"
     plt.title(titolo, fontsize=15)
     plt.xticks(rotation=75)
     plt.barh(df["Survived"],df['count_survived'])
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-def classe_viaggio(): 
-    print(path_materiale)
-    print('ciao')
+    if operation == "print":
+        print("sopravvissuti: " + str(df['count_survived'][1]))
+        print("non sopravvissuti: " + str(df['count_survived'][0]))
+    
+def classe_viaggio():
+    logger.info("chiamata funzione classe_viaggio")
     titolo = "Classe di appartenenza"
     df['prima_classe'] = np.where(df['Pclass']== 1 , 1 , 0)
     df['seconda_classe'] = np.where(df['Pclass']== 2 , 1 , 0)
@@ -176,22 +205,52 @@ def classe_viaggio():
     plt.title(titolo, fontsize=15)
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-    print(titolo)
+    if operation == "print":
+        print("numero di sopravvissuti per classe di biglietto: \n" )
+        print(data)
+    
 def class_sex():
+    logger.info("chiamata funzione class_sex")
+
     titolo = "percentuale_di_sopravvissuti_divisi_per_sesso_e_classe"
     sns.set_theme(style="whitegrid")
-    g = sns.catplot(data=df, kind="bar",x='Sex', y ='Survived' ,  hue="Pclass", palette="dark", alpha=.6, height=6)
+    g = sns.catplot(data=df, kind="bar",x='Sex', y ='Survived',  hue="Pclass", palette="dark", alpha=.6, height=6)
     g.despine(left=True)
     g.set_axis_labels("", "% di sopravvissuti per sesso e classe ")
     g.legend.set_title("")
     filename = "{}.png".format(titolo)
+    
+    #facciamo un try catch perchè catplot si comporta in modo anomalo randomicamente
+    
+    df['male_first']=np.where(df['Sex']=='male'& df['Pclass']== 1, 1, 0)
+    df['male_second']=np.where(df['Sex']=='male'& df['Pclass']==2, 1, 0)
+    df['male_third']=np.where(df['Sex']=='male'& df['Pclass']== 3, 1, 0)
+    df['female_first']=np.where(df['Sex']=='female'& df['Pclass']== 1, 1, 0)
+    df['female_second']=np.where(df['Sex']=='female'& df['Pclass']== 2, 1, 0)
+    df['female_third']=np.where(df['Sex']=='female'& df['Pclass']== 3, 1, 0)
+    
+    data = {'male-first': int((df['male_first']).sum()) ,
+            'male_second': int((df['male_second']).sum()) , 
+            'male_third': int((df['male_third']).sum()) ,
+            'female_first': int((df['female_first']).sum()) , 
+            'female_second': int((df['female_second']).sum()) , 
+            'female_third': int((df['female_third']).sum()) }
+    
+    
     try:
         plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
-        print('ha printato ')
+        logger.info("class_sex plot eseguito correttamente")
+        if operation == "print":
+            print("passeggeri divisi per sesso e classe: \n")
+            print(data)
+
     except:
-        print('non ha scaricato ')
+        logger.info("class_sex errori nella creazione del catplot")
+
 def eta():
-    titolo = "eta_deipasseggeri"   
+    logger.info("chiamata funzione eta")
+
+    titolo = "eta_dei_passeggeri"   
     df['cat_age']=np.where(df['Age']<10, "0-10", df['Age'])
     df['cat_age']=np.where(((df['Age']<20) & (df['Age']>=10)), "10-20", df['cat_age'])
     df['cat_age']=np.where(((df['Age']<30) & (df['Age']>=20)), "20-30", df['cat_age'])
@@ -210,9 +269,17 @@ def eta():
     plt.title(titolo, fontsize=15)
     filename = "{}.png".format(titolo)
     plt.savefig(path_materiale+filename,bbox_inches='tight',dpi=300,transparent=False)
+    if operation == "print":
+        print("eta dei passeggeri")
 
 
-# In[8]:
+# In[9]:
+
+
+df['count_survived']
+
+
+# In[10]:
 
 
 #VEDIAMO QUALI SONO I PARAMETRI PASSATI E LANCIAMO LE FUNZIONI CORRISPONDENTI
@@ -232,7 +299,8 @@ for i in range(1,len(sys.argv)):
         class_sex()
 
 
-# In[9]:
+# In[11]:
+
 
 
 #SE NON SIAMO IN PROD CONVERTE IL NOTEBOOK, CANCELLA EVENTUALE BUILD PRECEDENTE E NE CREA UNA NUOVA
@@ -266,24 +334,6 @@ if os.getenv("PROD") == None:
     #command = "docker run -it --entrypoint /bin/bash cloud_titanic"
     #command = "docker run -it cloud_titanic ."
     #os.system(command)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:

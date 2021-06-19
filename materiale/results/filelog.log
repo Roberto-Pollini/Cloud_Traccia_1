@@ -1,0 +1,5 @@
+2021-06-19 11:33:07,913 - INFO - File titanic trovato in locale
+2021-06-19 11:33:07,940 - INFO - csv convertito in dataframe
+2021-06-19 11:50:55,970 - INFO - File titanic trovato in locale
+2021-06-19 11:50:55,987 - INFO - csv convertito in dataframe
+2021-06-19 11:55:46,330 - INFO - chiamata funzione eta
